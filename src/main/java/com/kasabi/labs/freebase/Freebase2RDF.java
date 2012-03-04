@@ -86,7 +86,7 @@ public class Freebase2RDF {
                         output_literal ( out, tokens[0], tokens[1], tokens[3] );
                     } else {
                         if ( tokens[2].startsWith(LANG) ) {
-                            output_literal_lang ( out, tokens[0], tokens[1], tokens[3], tokens[2] );
+                            output_literal_lang ( out, tokens[0], tokens[1], tokens[3], tokens[2].substring(tokens[2].lastIndexOf('/') + 1) );
                         } else {
                             if ( tokens[1].equals(OBJECT_KEY) ) {
                                 output_literal2 ( out, tokens[0], tokens[1], tokens[2], tokens[3] );
@@ -104,11 +104,11 @@ public class Freebase2RDF {
                         log.warn ("Line {} has one or more empty tokens: {}", new Object[]{count, line});
                     }
                 }
-            
             }
         }
-        
         progressLogger.finish();
+        out.flush();
+        out.close();
     }
 
     private static void output_resource ( OutputStream out, String subject, String predicate, String object ) throws IOException {
