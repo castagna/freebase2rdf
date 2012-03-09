@@ -32,13 +32,15 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.openjena.atlas.lib.FileOps;
 
+import cmd.freebase2rdf;
+
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 @RunWith(Parameterized.class)
-public class TestFreebase2RDF {
+public class Testfreebase2rdf {
 
 	public static final Object[][] TEST_DATA = new Object[][] {
         { "src/test/resources/freebase-datadump-quadruples-mini.tsv.bz2", "src/test/resources/freebase-datadump-rdf-mini-expected.nt.gz", "target/freebase-datadump-rdf-mini.nt.gz" }, 
@@ -59,7 +61,7 @@ public class TestFreebase2RDF {
     private String expected ;
     private String output ;
     
-    public TestFreebase2RDF ( String input, String expected, String output ) {
+    public Testfreebase2rdf ( String input, String expected, String output ) {
         this.input = input ;
         this.expected = expected ;
         this.output = output ;
@@ -71,7 +73,7 @@ public class TestFreebase2RDF {
     
     private void run ( String input, String expected, String output ) throws Exception {
         String[] args = new String[] { input, output };
-        Freebase2RDF.main(args);
+        freebase2rdf.main(args);
         Model mExpected = ModelFactory.createDefaultModel().read(new GZIPInputStream(new FileInputStream(expected)), null, "N-TRIPLE");
         Model mOutput = ModelFactory.createDefaultModel().read(new GZIPInputStream(new FileInputStream(output)), null, "N-TRIPLE");
         assertTrue ( dump(mExpected,mOutput), mExpected.isIsomorphicWith(mOutput) );

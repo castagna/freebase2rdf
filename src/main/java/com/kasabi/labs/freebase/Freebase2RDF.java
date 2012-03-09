@@ -18,18 +18,9 @@
 
 package com.kasabi.labs.freebase;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.zip.GZIPOutputStream;
 
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-import org.openjena.atlas.logging.ProgressLogger;
 import org.openjena.riot.out.EscapeStr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,28 +46,12 @@ public class Freebase2RDF {
     private static final byte[] AT = "@".getBytes();
     private static final byte[] SPACE = " ".getBytes();
     private static final byte[] DOUBLE_QUOTES = "\"".getBytes();
-    
-    public static void main(String[] args) throws Exception {
-        if ( args.length != 2 ) { usage(); }
-        File input = new File(args[0]);
-        if ( !input.exists() ) error ("File " + input.getAbsolutePath() + " does not exist.");
-        if ( !input.canRead() ) error ("Cannot read file " + input.getAbsolutePath());
-        if ( !input.isFile() ) error ("Not a file " + input.getAbsolutePath());
-        File output = new File(args[1]);
-        if ( output.exists() ) error ("Output file " + output.getAbsolutePath() + " already exists, this program do not override existing files.");
-        if ( output.canWrite() ) error ("Cannot write file " + output.getAbsolutePath());
-        if ( output.isDirectory() ) error ("Not a file " + output.getAbsolutePath());
-        if ( !output.getName().endsWith(".nt.gz") ) error ("Output filename should end with .nt.gz, this is the only format supported.");
 
-        BufferedReader in = new BufferedReader ( new InputStreamReader ( new BZip2CompressorInputStream ( new FileInputStream ( input ) ) ) );
-        BufferedOutputStream out = new BufferedOutputStream ( new GZIPOutputStream ( new FileOutputStream ( output ) ) );
-        String line;
-        int count = 0;
-        ProgressLogger progressLogger = new ProgressLogger(log, "lines", 100000, 1000000);
-        progressLogger.start();
-        while ( ( line = in.readLine() ) != null ) {
-            count++;
-            progressLogger.tick();
+    private int count = 0;
+
+    public void sent ( OutputStream out, String line ) {
+    	try {
+    		count++;
             String[] tokens = line.split("\\t");
             if ( tokens.length > 0 ) {
                 if ( ( tokens.length == 3 ) && (tokens[0].trim().length() > 0) && (tokens[1].trim().length() > 0) && (tokens[2].trim().length() > 0) ) {            
@@ -104,42 +79,41 @@ public class Freebase2RDF {
                         log.warn ("Line {} has one or more empty tokens: {}", new Object[]{count, line});
                     }
                 }
-            }
-        }
-        progressLogger.finish();
-        out.flush();
-        out.close();
+            }    		
+    	} catch ( IOException e ) {
+    		log.error(e.getMessage(), e);
+    	}
     }
-
-    private static void output_resource ( OutputStream out, String subject, String predicate, String object ) throws IOException {
+    
+    private void output_resource ( OutputStream out, String subject, String predicate, String object ) throws IOException {
         output_resource ( out, subject );
         output_resource ( out, predicate );
         output_resource ( out, object );
         output_dot ( out );
     }
 
-    private static void output_literal ( OutputStream out, String subject, String predicate, String literal ) throws IOException {
+    private void output_literal ( OutputStream out, String subject, String predicate, String literal ) throws IOException {
         output_resource ( out, subject );
         output_resource ( out, predicate );
         output_literal ( out, literal );
         output_dot ( out );
     }
 
-    private static void output_literal2 ( OutputStream out, String subject, String predicate1, String predicate2, String literal ) throws IOException {
+    private void output_literal2 ( OutputStream out, String subject, String predicate1, String predicate2, String literal ) throws IOException {
         output_resource ( out, subject );
         output_resource ( out, predicate1, predicate2 );
         output_literal ( out, literal );
         output_dot ( out );
     }
 
-    private static void output_literal_lang ( OutputStream out, String subject, String predicate, String literal, String lang ) throws IOException {
+    private void output_literal_lang ( OutputStream out, String subject, String predicate, String literal, String lang ) throws IOException {
         output_resource ( out, subject );
         output_resource ( out, predicate );
         output_literal ( out, literal, lang );
         output_dot ( out );        
     }
     
-    private static void output_resource ( OutputStream out, String resource ) throws IOException {
+    private void output_resource ( OutputStream out, String resource ) throws IOException {
         out.write(LT);
         out.write(FREEBASE_NS);
         out.write(resource.getBytes());
@@ -147,7 +121,7 @@ public class Freebase2RDF {
         out.write(SPACE);
     }
 
-    private static void output_resource ( OutputStream out, String resource1, String resource2 ) throws IOException {
+    private void output_resource ( OutputStream out, String resource1, String resource2 ) throws IOException {
         out.write(LT);
         out.write(FREEBASE_NS);
         out.write(resource1.getBytes());
@@ -156,14 +130,14 @@ public class Freebase2RDF {
         out.write(SPACE);
     }
 
-    private static void output_literal ( OutputStream out, String literal ) throws IOException {
+    private void output_literal ( OutputStream out, String literal ) throws IOException {
         out.write ( DOUBLE_QUOTES );
         out.write ( EscapeStr.stringEsc( literal ).getBytes() );
         out.write ( DOUBLE_QUOTES );
         out.write(SPACE);
     }
     
-    private static void output_literal ( OutputStream out, String literal, String lang ) throws IOException {
+    private void output_literal ( OutputStream out, String literal, String lang ) throws IOException {
         out.write ( DOUBLE_QUOTES );
         out.write ( EscapeStr.stringEsc( literal ).getBytes() );
         out.write ( DOUBLE_QUOTES );
@@ -172,19 +146,9 @@ public class Freebase2RDF {
         out.write(SPACE);
     }
     
-    private static void output_dot ( OutputStream out ) throws IOException {
+    private void output_dot ( OutputStream out ) throws IOException {
         out.write ( DOT );
         out.write ( NL );
-    }
-    
-    private static void usage() {
-        System.err.println("Usage: Freebase2RDF </path/to/freebase-datadump-quadruples.tsv.bz2> </path/to/filename.nt.gz>");
-        System.exit(0);
-    }
-
-    private static void error ( String message ) {
-        System.err.println(message);
-        System.exit(0);
     }
 
 }
