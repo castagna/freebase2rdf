@@ -18,6 +18,8 @@
 
 package cmd;
 
+import static com.hp.hpl.jena.sparql.util.Utils.nowAsString;
+
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -61,9 +63,10 @@ public class freebase2rdf {
             progressLogger.tick();
 
         }
-        progressLogger.finish();
         out.flush();
         out.close();
+
+        print ( log, progressLogger );
     }
 
     private static void usage() {
@@ -76,4 +79,13 @@ public class freebase2rdf {
         System.exit(0);
     }
 
+    private static void print ( Logger log, ProgressLogger monitor ) {
+        long time = monitor.finish() ;
+        long total = monitor.getTicks() ;
+        float elapsedSecs = time/1000F ;
+        float rate = (elapsedSecs!=0) ? total/elapsedSecs : 0 ;
+        String str =  String.format("Total: %,d lines : %,.2f seconds : %,.2f lines/sec [%s]", total, elapsedSecs, rate, nowAsString()) ;
+        log.info(str) ;
+    }
+    
 }
