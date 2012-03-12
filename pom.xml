@@ -10,9 +10,10 @@
 
   <properties>
     <jena.version>2.7.0-incubating</jena.version>
-    <arq.version>2.9.1-incubating-SNAPSHOT</arq.version>
+    <arq.version>2.9.0-incubating</arq.version>
     <tdb.version>0.9.0-incubating</tdb.version>
     <commons-compress.version>1.3</commons-compress.version>
+    <hadoop.version>1.0.1</hadoop.version>
     <slf4j.version>1.6.4</slf4j.version>
     <log4j.version>1.2.16</log4j.version>
     <junit.version>4.9</junit.version>
@@ -41,6 +42,16 @@
       <artifactId>commons-compress</artifactId>
       <version>${commons-compress.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-core</artifactId>
+      <version>${hadoop.version}</version>
+    </dependency>    
+    <dependency> <!-- This is a runtime dependency for Hadoop v1.0.1 -->
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>jsr311-api</artifactId>
+      <version>1.1.1</version>
+    </dependency>    
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -106,6 +117,15 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <!-- See: http://github.com/akkumar/maven-hadoop -->
+      <plugin>
+        <groupId>com.github.maven-hadoop.plugin</groupId>
+        <artifactId>maven-hadoop-plugin</artifactId>
+        <version>0.20.1</version>
+        <configuration>
+          <hadoopHome>/usr/lib/hadoop</hadoopHome>
+        </configuration>
       </plugin>
     </plugins>
   </build>

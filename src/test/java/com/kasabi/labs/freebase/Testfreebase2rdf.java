@@ -79,7 +79,7 @@ public class Testfreebase2rdf {
         assertTrue ( dump(mExpected,mOutput), mExpected.isIsomorphicWith(mOutput) );
     }
     
-    private String dump ( Model m1, Model m2 ) {
+    public static String dump ( Model m1, Model m2 ) {
         StringBuffer sb = new StringBuffer();
         sb.append("\n");
         Model d12 = m1.difference(m2);
@@ -95,7 +95,7 @@ public class Testfreebase2rdf {
         return sb.toString();
     }
 
-	private void dump ( StringBuffer sb, Model m ) {
+    public static void dump ( StringBuffer sb, Model m ) {
 		StmtIterator iter = m.listStatements();
 		while ( iter.hasNext() ) {
 			Statement stmt = iter.next();
