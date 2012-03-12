@@ -21,6 +21,7 @@ package com.kasabi.labs.freebase;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.openjena.atlas.lib.Sink;
 import org.openjena.riot.out.EscapeStr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +31,7 @@ import org.slf4j.LoggerFactory;
 //  with a particular relationship are contiguous and sorted roughly by importance." 
 //  -- http://wiki.freebase.com/wiki/Data_dumps
 
-public class Freebase2RDF {
+public class Freebase2RDF implements Sink<String> {
 
     public static final Logger log = LoggerFactory.getLogger(Freebase2RDF.class);
 
@@ -47,26 +48,42 @@ public class Freebase2RDF {
     private static final byte[] SPACE = " ".getBytes();
     private static final byte[] DOUBLE_QUOTES = "\"".getBytes();
 
+    private final OutputStream out;
     private int count = 0;
 
-    public void sent ( OutputStream out, String line ) {
+    public Freebase2RDF ( OutputStream out ) {
+        this.out = out;
+    }
+
+    @Override
+    public void flush() {
+        try { out.flush(); } catch (IOException e) { log.error(e.getMessage(), e); }
+    }
+
+    @Override
+    public void close() {
+        try { out.close(); } catch (IOException e) { log.error(e.getMessage(), e); }
+    }
+
+    @Override
+    public void send ( String line ) {
     	try {
     		count++;
             String[] tokens = line.split("\\t");
             if ( tokens.length > 0 ) {
                 if ( ( tokens.length == 3 ) && (tokens[0].trim().length() > 0) && (tokens[1].trim().length() > 0) && (tokens[2].trim().length() > 0) ) {            
-                    output_resource ( out, tokens[0], tokens[1], tokens[2] );
+                    resource ( tokens[0], tokens[1], tokens[2] );
                 } else if ( ( tokens.length == 4 ) && (tokens[0].trim().length() > 0) && (tokens[1].trim().length() > 0) && (tokens[3].trim().length() > 0) ) {
                     if ( tokens[2].trim().length() == 0 ) {
-                        output_literal ( out, tokens[0], tokens[1], tokens[3] );
+                        literal ( tokens[0], tokens[1], tokens[3] );
                     } else {
                         if ( tokens[2].startsWith(LANG) ) {
-                            output_literal_lang ( out, tokens[0], tokens[1], tokens[3], tokens[2].substring(tokens[2].lastIndexOf('/') + 1) );
+                            literal_lang ( tokens[0], tokens[1], tokens[3], tokens[2].substring(tokens[2].lastIndexOf('/') + 1) );
                         } else {
                             if ( tokens[1].equals(OBJECT_KEY) ) {
-                                output_literal2 ( out, tokens[0], tokens[1], tokens[2], tokens[3] );
+                                literal2 ( tokens[0], tokens[1], tokens[2], tokens[3] );
                             } else if ( (tokens[1].equals(OBJECT_NAME)) && (tokens[2].startsWith(GUID)) ) {
-                                output_literal2 ( out, tokens[0], tokens[1], tokens[2], tokens[3] );
+                                literal2 ( tokens[0], tokens[1], tokens[2], tokens[3] );
                             } else {
                                 log.warn ("Unexpected data at {}, ignoring: {}", count, line);
                             }
@@ -85,70 +102,71 @@ public class Freebase2RDF {
     	}
     }
     
-    private void output_resource ( OutputStream out, String subject, String predicate, String object ) throws IOException {
-        output_resource ( out, subject );
-        output_resource ( out, predicate );
-        output_resource ( out, object );
-        output_dot ( out );
+    private void resource ( String subject, String predicate, String object ) throws IOException {
+        resource ( subject );
+        resource ( predicate );
+        resource ( object );
+        dot ();
     }
 
-    private void output_literal ( OutputStream out, String subject, String predicate, String literal ) throws IOException {
-        output_resource ( out, subject );
-        output_resource ( out, predicate );
-        output_literal ( out, literal );
-        output_dot ( out );
+    private void literal ( String subject, String predicate, String literal ) throws IOException {
+        resource ( subject );
+        resource ( predicate );
+        literal ( literal );
+        dot ();
     }
 
-    private void output_literal2 ( OutputStream out, String subject, String predicate1, String predicate2, String literal ) throws IOException {
-        output_resource ( out, subject );
-        output_resource ( out, predicate1, predicate2 );
-        output_literal ( out, literal );
-        output_dot ( out );
+    private void literal2 ( String subject, String predicate1, String predicate2, String literal ) throws IOException {
+        resource ( subject );
+        resource ( predicate1, predicate2 );
+        literal ( literal );
+        dot ();
     }
 
-    private void output_literal_lang ( OutputStream out, String subject, String predicate, String literal, String lang ) throws IOException {
-        output_resource ( out, subject );
-        output_resource ( out, predicate );
-        output_literal ( out, literal, lang );
-        output_dot ( out );        
+    private void literal_lang ( String subject, String predicate, String literal, String lang ) throws IOException {
+        resource ( subject );
+        resource ( predicate );
+        output_literal ( literal, lang );
+        dot ();        
     }
     
-    private void output_resource ( OutputStream out, String resource ) throws IOException {
-        out.write(LT);
-        out.write(FREEBASE_NS);
-        out.write(resource.getBytes());
-        out.write(GT);
-        out.write(SPACE);
+    private void resource ( String resource ) throws IOException {
+        out.write ( LT );
+        out.write ( FREEBASE_NS );
+        out.write ( resource.getBytes() );
+        out.write ( GT );
+        out.write ( SPACE );
     }
 
-    private void output_resource ( OutputStream out, String resource1, String resource2 ) throws IOException {
-        out.write(LT);
-        out.write(FREEBASE_NS);
-        out.write(resource1.getBytes());
-        out.write(resource2.getBytes());
-        out.write(GT);
-        out.write(SPACE);
+    private void resource ( String resource1, String resource2 ) throws IOException {
+        out.write ( LT );
+        out.write ( FREEBASE_NS );
+        out.write ( resource1.getBytes() );
+        out.write ( resource2.getBytes() );
+        out.write ( GT );
+        out.write ( SPACE );
     }
 
-    private void output_literal ( OutputStream out, String literal ) throws IOException {
+    private void literal ( String literal ) throws IOException {
         out.write ( DOUBLE_QUOTES );
         out.write ( EscapeStr.stringEsc( literal ).getBytes() );
         out.write ( DOUBLE_QUOTES );
-        out.write(SPACE);
+        out.write ( SPACE );
     }
     
-    private void output_literal ( OutputStream out, String literal, String lang ) throws IOException {
+    private void output_literal ( String literal, String lang ) throws IOException {
         out.write ( DOUBLE_QUOTES );
         out.write ( EscapeStr.stringEsc( literal ).getBytes() );
         out.write ( DOUBLE_QUOTES );
         out.write ( AT );
         out.write ( lang.getBytes() );
-        out.write(SPACE);
+        out.write ( SPACE );
     }
     
-    private void output_dot ( OutputStream out ) throws IOException {
+    private void dot () throws IOException {
         out.write ( DOT );
         out.write ( NL );
     }
+
 
 }

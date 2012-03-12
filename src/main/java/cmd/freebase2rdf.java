@@ -55,17 +55,18 @@ public class freebase2rdf {
         BufferedOutputStream out = new BufferedOutputStream ( new GZIPOutputStream ( new FileOutputStream ( output ) ) );
         String line;
 
-        Freebase2RDF freebase2rdf = new Freebase2RDF();
         ProgressLogger progressLogger = new ProgressLogger(log, "lines", 100000, 1000000);
         progressLogger.start();
-        while ( ( line = in.readLine() ) != null ) {
-        	freebase2rdf.sent(out, line);
-            progressLogger.tick();
-
+        Freebase2RDF freebase2rdf = null;
+        try {
+            freebase2rdf = new Freebase2RDF ( out );
+            while ( ( line = in.readLine() ) != null ) {
+                freebase2rdf.send ( line );
+                progressLogger.tick();
+            }
+        } finally {
+            if ( freebase2rdf != null ) freebase2rdf.close();            
         }
-        out.flush();
-        out.close();
-
         print ( log, progressLogger );
     }
 
