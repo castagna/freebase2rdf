@@ -1,0 +1,88 @@
+
+http://schemas.freebaseapps.com/
+http://schemaviz.freebaseapps.com/
+http://www.freebase.com/schema/
+http://www.freebase.com/queryeditor
+http://thinkbase.cs.auckland.ac.nz/start.jsp
+http://www.freebase.com/docs/mql
+
+List domains and all types for each domain:
+
+{
+  "id":    null,
+  "type":  "/type/domain",
+  "types": [],
+  "key": [{ "namespace": "/" }],
+}
+
+List all properties for each type:
+
+{
+  "id":         "/government/politician",
+  "properties": [],
+  "type":       "/type/type"
+}
+
+
+List all domains with types and properties:
+
+{
+  "id":   null,
+  "type": "/type/domain",
+  "types": [{
+    "id":         null,
+    "properties": [{}],
+    "type":       "/type/type"
+  }],
+  "key": [{
+    "namespace": "/"
+  }]
+}
+
+
+
+{
+  "id":   null,
+  "type": "/type/domain",
+  "types": [{
+    "id":         null,
+    "properties": [{}]
+    "*": null,
+  }],
+  "key": [{
+    "namespace": "/"
+  }]
+}
+
+
+
+/tv/tv_episode_segment/performances
+
+
+{
+  "*":    null,
+  "id":   "/tv/tv_segment_performance/segment",
+  "type": "/type/property"
+}
+
+
+[{
+  "id":   null,
+  "name": null,
+  "type": "/freebase/domain_profile",
+  "category": {
+    "id": "/category/commons"
+  }
+}]​
+
+
+
+[{
+  "id":   null,
+  "name": null,
+  "sort": "name",
+  "type": "/freebase/domain_profile",
+  "category": {
+    "id": "/category/commons"
+  }
+}]
