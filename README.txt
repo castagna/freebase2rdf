@@ -34,7 +34,7 @@
   See also
   --------
 
-   - http://basekb.com/
+   - http://basekb.com/ and http://code.google.com/p/basekb-tools/
    - http://code.google.com/p/freebase-quad-rdfize/
    - http://markmail.org/thread/mq6ylzdes6n7sc5o
    - http://markmail.org/thread/jegtn6vn7kb62zof
