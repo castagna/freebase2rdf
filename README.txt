@@ -28,7 +28,7 @@
 
     cd freebase2rdf
     mvn package
-    java -cp target/freebase2rdf-0.1-SNAPSHOT-jar-with-dependencies.jar com.kasabi.labs.freebase.Freebase2RDF </path/to/freebase-datadump-quadruples.tsv.bz2> </path/to/filename.nt.gz>
+    java -cp target/freebase2rdf-0.1-SNAPSHOT-jar-with-dependencies.jar cmd.freebase2rdf </path/to/freebase-datadump-quadruples.tsv.bz2> </path/to/filename.nt.gz>
 
 
   See also
